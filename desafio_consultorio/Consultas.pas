@@ -42,6 +42,7 @@ type
     procedure btnGravarClick(Sender: TObject);
     procedure btnIncluirClick(Sender: TObject);
     procedure btnFecharClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -72,6 +73,9 @@ begin
   DataModule1.cdsMedicos.Close;
   DataModule1.cdsConsultorio.Close;
   DataModule1.cdsPaciente.Close;
+
+  dtpData.Date := now;
+  dtpHora.Time := now;
 end;
 
 procedure TfrmConsulta.btnLocalizarMedicoClick(Sender: TObject);
@@ -108,8 +112,9 @@ begin
 
     tratarData := StringReplace(datetostr(dtpData.Date), '/', '.', [rfReplaceAll, rfIgnoreCase]);
 
-    tratarHoraInicio := timetostr(IncMinute(dtpHora.Time, - 15));
-    tratarHoraFim := timetostr(IncMinute(dtpHora.Time, + 15));
+    tratarHoraInicio := FormatDateTime('HH:mm',IncMinute(dtpHora.Time, - 15));
+    tratarHoraFim := FormatDateTime('HH:mm',IncMinute(dtpHora.Time, + 15));
+
 
     /// Verifica se tem consulta marcada para a data
 
@@ -146,73 +151,57 @@ begin
         ShowMessage('Atenção: Você não pode marcar consulta neste consultório, pois o mesmo já possui consulta marcada!');
         exit;
       end;
-    end;
+    end
+    else Begin
+      //////Paciente já possui consulta marcada para o dia
+      DataModule1.cdsRelatorioConsulta.Close;
 
+      DataModule1.cdsRelatorioConsulta.CommandText := 'select * from vconsulta v where id_paciente = ' + inttostr(DataModule1.cdsPacienteID_PACIENTE.AsInteger) + ' and v.data = ''' + tratarData + '''';
 
-    contadorConsultas := 0;
-    DataModule1.cdsRelatorioConsulta.First;
+      DataModule1.cdsRelatorioConsulta.Open;
 
-    while not DataModule1.cdsRelatorioConsulta.Eof do Begin
-      contadorConsultas := contadorConsultas + 1;
-      DataModule1.cdsRelatorioConsulta.Next;
-    end;
-
-    if (contadorConsultas >= 12) then begin
-      ShowMessage('Atenção: Você não pode utilizar este consultório, pois já possui 12 consultas marcadas para esta data!');
-      exit;
-    end;
-
-
-    //////Paciente já possui consulta marcada para o dia
-    DataModule1.cdsRelatorioConsulta.Close;
-
-    DataModule1.cdsRelatorioConsulta.CommandText := 'select * from vconsulta v where id_paciente = ' + inttostr(DataModule1.cdsPacienteID_PACIENTE.AsInteger) + ' and v.data = ''' + tratarData + '''';
-
-    DataModule1.cdsRelatorioConsulta.Open;
-
-    if DataModule1.cdsRelatorioConsulta.IsEmpty = false then begin
-      ShowMessage('Atenção: Você não pode marcar consulta para este paciente pois o mesmo, já possui consulta marcada para esta data!');
-      exit;
-    end;
-
-
-    /////// Quantidades de consulta marcadas para o consultório
-
-    DataModule1.cdsRelatorioConsulta.Close;
-
-    DataModule1.cdsRelatorioConsulta.CommandText := 'select * from vconsulta v where id_consultorio = ' + inttostr(DataModule1.cdsConsultorioID_CONSULTORIO.AsInteger) + ' and v.data = ''' + tratarData + '''';
-
-    DataModule1.cdsRelatorioConsulta.Open;
-
-    contadorConsultas := 0;
-    DataModule1.cdsRelatorioConsulta.First;
-
-    while not DataModule1.cdsRelatorioConsulta.Eof do Begin
-      contadorConsultas := contadorConsultas + 1;
-      DataModule1.cdsRelatorioConsulta.Next;
-    end;
-
-    if (contadorConsultas >= 12) then begin
-      ShowMessage('Atenção: Você não pode utilizar este consultório, pois já possui 12 consultas marcadas para esta data!');
-      exit;
-    end;
-
-    ///Médico já esta atendendo em outro consultório para esta data
-
-    DataModule1.cdsRelatorioConsulta.Close;
-
-    DataModule1.cdsRelatorioConsulta.CommandText := 'select * from vconsulta v where id_medico = ' + inttostr(DataModule1.cdsMedicosID_MEDICO.AsInteger) + ' and v.data = ''' + tratarData + '''';
-
-    DataModule1.cdsRelatorioConsulta.Open;
-
-    if DataModule1.cdsRelatorioConsulta.IsEmpty = false then begin
-      if DataModule1.cdsRelatorioConsultaID_CONSULTORIO.AsInteger <> DataModule1.cdsConsultorioID_CONSULTORIO.AsInteger then begin
-        ShowMessage('Atenção: Você não pode marcar consulta, pois este médico já esta atendendo no consultório ' + inttostr(DataModule1.cdsRelatorioConsultaID_CONSULTORIO.AsInteger));
+      if DataModule1.cdsRelatorioConsulta.IsEmpty = false then begin
+        ShowMessage('Atenção: Você não pode marcar consulta para este paciente pois o mesmo, já possui consulta marcada para esta data!');
         exit;
       end;
+
+
+      /////// Quantidades de consulta marcadas para o consultório
+
+      DataModule1.cdsRelatorioConsulta.Close;
+
+      DataModule1.cdsRelatorioConsulta.CommandText := 'select * from vconsulta v where id_consultorio = ' + inttostr(DataModule1.cdsConsultorioID_CONSULTORIO.AsInteger) + ' and v.data = ''' + tratarData + '''';
+
+      DataModule1.cdsRelatorioConsulta.Open;
+
+      contadorConsultas := 0;
+      DataModule1.cdsRelatorioConsulta.First;
+
+      while not DataModule1.cdsRelatorioConsulta.Eof do Begin
+        contadorConsultas := contadorConsultas + 1;
+        DataModule1.cdsRelatorioConsulta.Next;
+      end;
+
+      if (contadorConsultas >= 12) then begin
+        ShowMessage('Atenção: Você não pode utilizar este consultório, pois já possui 12 consultas marcadas para esta data!');
+        exit;
+      end;
+
+      ///Médico já esta atendendo em outro consultório para esta data
+
+      DataModule1.cdsRelatorioConsulta.Close;
+
+      DataModule1.cdsRelatorioConsulta.CommandText := 'select * from vconsulta v where id_medico = ' + inttostr(DataModule1.cdsMedicosID_MEDICO.AsInteger) + ' and v.data = ''' + tratarData + '''';
+
+      DataModule1.cdsRelatorioConsulta.Open;
+
+      if DataModule1.cdsRelatorioConsulta.IsEmpty = false then begin
+        if DataModule1.cdsRelatorioConsultaID_CONSULTORIO.AsInteger <> DataModule1.cdsConsultorioID_CONSULTORIO.AsInteger then begin
+          ShowMessage('Atenção: Você não pode marcar consulta, pois este médico já esta atendendo no consultório ' + inttostr(DataModule1.cdsRelatorioConsultaID_CONSULTORIO.AsInteger));
+          exit;
+        end;
+      end;
     end;
-
-
 
     DataModule1.cdsConsultas.Open;
     DataModule1.cdsConsultas.Last;
@@ -226,10 +215,17 @@ begin
     DataModule1.cdsConsultas.FieldByName('ID_CONSULTORIO').AsInteger := DataModule1.cdsConsultorioID_CONSULTORIO.AsInteger;
     DataModule1.cdsConsultas.FieldByName('ID_PACIENTE').AsInteger := DataModule1.cdsPacienteID_PACIENTE.AsInteger;
     DataModule1.cdsConsultas.FieldByName('DATA').AsDateTime := dtpData.Date;
-    DataModule1.cdsConsultas.FieldByName('HORA').AsDateTime := dtpHora.Time;
+    DataModule1.cdsConsultas.FieldByName('HORA').AsDateTime := strtotime(FormatDateTime('HH:mm',dtpHora.Time));
     DataModule1.cdsConsultas.Post;
     DataModule1.cdsConsultas.ApplyUpdates(-1);
     DataModule1.cdsConsultas.Close;
+
+    dtpData.Date := now;
+    dtpHora.Time := now;
+    cbEspecialidade.Text := '';
+    edtConsultorio.Text := '';
+    edtPaciente.Text := '';
+    edtMedico.Text := '';
 end;
 
 procedure TfrmConsulta.btnIncluirClick(Sender: TObject);
@@ -241,6 +237,18 @@ end;
 procedure TfrmConsulta.btnFecharClick(Sender: TObject);
 begin
   close;
+end;
+
+procedure TfrmConsulta.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  DataModule1.cdsRelatorioConsulta.Close;
+  DataModule1.cdsMedicos.Close;
+  DataModule1.cdsConsultorio.Close;
+  DataModule1.cdsPaciente.Close;
+  DataModule1.cdsEspecialidade.Close;
+  DataModule1.cdsConsultas.Close;
+  cbEspecialidade.Items.Clear;
 end;
 
 end.

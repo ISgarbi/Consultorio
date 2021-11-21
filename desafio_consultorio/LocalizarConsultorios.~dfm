@@ -1,5 +1,5 @@
 object frmLocalizarConsultorios: TfrmLocalizarConsultorios
-  Left = 278
+  Left = 279
   Top = 206
   Width = 484
   Height = 264

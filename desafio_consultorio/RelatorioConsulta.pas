@@ -132,6 +132,10 @@ procedure TfrmRelatorioConsulta.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   DataModule1.cdsRelatorioConsulta.Close;
+  DataModule1.cdsMedicos.Close;
+  DataModule1.cdsConsultorio.Close;
+  DataModule1.cdsPaciente.Close;
+  DataModule1.cdsEspecialidade.Close;
 end;
 
 procedure TfrmRelatorioConsulta.ckEspecialidadeClick(Sender: TObject);
@@ -163,7 +167,7 @@ begin
       exit;
     end
     else
-      montaConsulta := montaConsulta + ' AND v.hora between ''' + timetostr(dtpHoraInicio.Time) + ''' and ''' + timetostr(dtpHoraFim.Time) + '''';
+      montaConsulta := montaConsulta + ' AND v.hora between ''' + FormatDateTime('HH:mm',dtpHoraInicio.Time) + ''' and ''' + timetostr(dtpHoraFim.Time) + '''';
   end;
 
   if cbEspecialidade.Text <> '' then

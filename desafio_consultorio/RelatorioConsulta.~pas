@@ -132,6 +132,10 @@ procedure TfrmRelatorioConsulta.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   DataModule1.cdsRelatorioConsulta.Close;
+  DataModule1.cdsMedicos.Close;
+  DataModule1.cdsConsultorio.Close;
+  DataModule1.cdsPaciente.Close;
+  DataModule1.cdsEspecialidade.Close;
 end;
 
 procedure TfrmRelatorioConsulta.ckEspecialidadeClick(Sender: TObject);

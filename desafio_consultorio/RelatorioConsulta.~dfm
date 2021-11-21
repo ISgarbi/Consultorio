@@ -1,5 +1,5 @@
 object frmRelatorioConsulta: TfrmRelatorioConsulta
-  Left = 248
+  Left = 249
   Top = 99
   Width = 925
   Height = 590

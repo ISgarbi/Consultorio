@@ -97,7 +97,7 @@ object frmLocalizarConsultorios: TfrmLocalizarConsultorios
           Expanded = False
           FieldName = 'NOME'
           Title.Caption = 'Nome'
-          Width = 327
+          Width = 308
           Visible = True
         end
         item
